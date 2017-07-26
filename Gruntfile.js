@@ -77,18 +77,19 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', [
+    'nodemon server.js', 'concat', 'uglify'
   ]);
 
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
-      // add your production server task here
+      grunt.task.run(['git push live master']);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
   });
 
   grunt.registerTask('deploy', [
-    // add your deploy tasks here
+    'git push live master'
   ]);
 
 
