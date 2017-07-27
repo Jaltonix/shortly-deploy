@@ -8,7 +8,7 @@ module.exports = function(grunt) {
       },
       dist: {
         src: ['public/client/**/*.js', 'public/lib/**/*.js'],
-        dest: 'public/dist/clientmin.js',
+        dest: 'public/dist/<%= pkg.name %>.js',
       },
     },
 
@@ -29,18 +29,23 @@ module.exports = function(grunt) {
 
     uglify: {
       dist: {
-        src: ['public/client/**/*.js', 'public/lib/**/*.js'],
-        dest: 'dist/basic.js',
-      },
+        files: {
+          'public/dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+        }
+      }
     },
 
     eslint: {
       target: [
-        // Add list of files to lint here
+        'public/client/**/*.js'
       ]
     },
 
     cssmin: {
+      target: {
+        src: ['public/*.css'],
+        dest: 'public/dist/style.min.css'
+      }
     },
 
     watch: {
@@ -55,13 +60,19 @@ module.exports = function(grunt) {
         ]
       },
       css: {
-        files: 'public/*.css',
+        files: ['public/*.css'],
         tasks: ['cssmin']
       }
     },
 
     shell: {
       prodServer: {
+        command: 'git push live master',
+        options: {
+          stdout: true,
+          stderr: true,
+          failOnError: true
+        }
       }
     },
   });
@@ -84,24 +95,24 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
 
   grunt.registerTask('test', [
-    'mochaTest'
+    'eslint', 'mochaTest'
   ]);
 
   grunt.registerTask('build', [
-    'nodemon server.js', 'concat', 'uglify'
+    'concat', 'uglify', 'cssmin'
   ]);
 
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
-      grunt.task.run(['git push live master']);
+      grunt.task.run([ 'shell:prodServer' ]);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
   });
 
   grunt.registerTask('deploy', [
-    'git push live master'
+    'test',
+    'build',
+    'upload'
   ]);
-
-
 };
